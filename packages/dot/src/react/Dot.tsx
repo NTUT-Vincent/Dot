@@ -76,8 +76,9 @@ export function Dot({ data }: DotProps) {
       if (spec.widgets.length > options.maxWidgets) {
         spec = { ...spec, widgets: spec.widgets.slice(0, options.maxWidgets) };
       }
-      setDashboardSpec(spec);
-      setMessages(prev => [...prev, { role: "assistant", content: `Dashboard generated: ${spec!.title ?? "Untitled"}` }]);
+      const finalSpec = spec;
+      setDashboardSpec(finalSpec);
+      setMessages(prev => [...prev, { role: "assistant", content: `Dashboard generated: ${finalSpec.title ?? "Untitled"}` }]);
     } else {
       setError(`Failed to generate dashboard: ${lastError}`);
       setMessages(prev => [...prev, { role: "assistant", content: `Sorry, I couldn't generate a valid dashboard. ${lastError}` }]);
