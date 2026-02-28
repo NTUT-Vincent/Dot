@@ -1,0 +1,10 @@
+{
+  "name": "dot-monorepo",
+  "private": true,
+  "workspaces": ["packages/*"],
+  "scripts": {
+    "build": "npm run build --workspace=packages/dot",
+    "test": "npm run test --workspace=packages/dot",
+    "lint": "npm run lint --workspace=packages/dot"
+  }
+}
