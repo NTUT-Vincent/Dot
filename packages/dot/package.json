@@ -29,6 +29,9 @@
     "typescript": "^5.4.4"
   },
   "dependencies": {
-    "recharts": "^2.12.4"
+    "ag-grid-community": "^35.1.0",
+    "ag-grid-react": "^35.1.0",
+    "highcharts": "^12.5.0",
+    "highcharts-react-official": "^3.2.3"
   }
 }
