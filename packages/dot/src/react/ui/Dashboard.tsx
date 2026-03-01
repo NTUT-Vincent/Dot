@@ -1,6 +1,10 @@
 import React from "react";
 import type { DashboardSpec, WidgetSpec, KPIWidgetSpec, TableWidgetSpec, BarChartWidgetSpec, LineChartWidgetSpec, MarkdownWidgetSpec } from "../../core/types";
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import Highcharts from "highcharts";
+import HighchartsReact from "highcharts-react-official";
+import { AgGridReact } from "ag-grid-react";
+import "ag-grid-community/styles/ag-grid.css";
+import "ag-grid-community/styles/ag-theme-alpine.css";
 
 function KPIWidget({ widget }: { widget: KPIWidgetSpec }) {
   return (
@@ -22,65 +26,51 @@ function KPIWidget({ widget }: { widget: KPIWidgetSpec }) {
 
 function TableWidget({ widget }: { widget: TableWidgetSpec }) {
   const rows = widget.maxRows ? widget.rows.slice(0, widget.maxRows) : widget.rows;
+  const colDefs = widget.columns.map(col => ({ field: col.key, headerName: col.label }));
   return (
-    <div style={{ background: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: 8, padding: 16, overflowX: "auto" }}>
+    <div style={{ background: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: 8, padding: 16 }}>
       <h3 style={{ margin: "0 0 12px", fontSize: 14, color: "#374151" }}>{widget.title}</h3>
-      <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
-        <thead>
-          <tr>
-            {widget.columns.map(col => (
-              <th key={col.key} style={{ textAlign: "left", padding: "4px 8px", borderBottom: "2px solid #e5e7eb", color: "#374151" }}>
-                {col.label}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row, i) => (
-            <tr key={i} style={{ background: i % 2 === 0 ? "#fff" : "#f9fafb" }}>
-              {widget.columns.map(col => (
-                <td key={col.key} style={{ padding: "4px 8px", borderBottom: "1px solid #f3f4f6" }}>
-                  {String(row[col.key] ?? "")}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div className="ag-theme-alpine" style={{ width: "100%" }}>
+        <AgGridReact
+          rowData={rows}
+          columnDefs={colDefs}
+          domLayout="autoHeight"
+        />
+      </div>
     </div>
   );
 }
 
 function BarChartWidget({ widget }: { widget: BarChartWidgetSpec }) {
+  const options: Highcharts.Options = {
+    chart: { type: "bar" },
+    title: { text: undefined },
+    xAxis: { categories: widget.data.map(d => String(d[widget.xKey])) },
+    yAxis: { title: { text: undefined } },
+    series: [{ type: "bar", name: widget.yKey, data: widget.data.map(d => Number(d[widget.yKey])) }],
+    credits: { enabled: false },
+  };
   return (
     <div style={{ background: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: 8, padding: 16 }}>
       <h3 style={{ margin: "0 0 12px", fontSize: 14, color: "#374151" }}>{widget.title}</h3>
-      <ResponsiveContainer width="100%" height={200}>
-        <BarChart data={widget.data}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey={widget.xKey} />
-          <YAxis />
-          <Tooltip />
-          <Bar dataKey={widget.yKey} fill="#2563eb" />
-        </BarChart>
-      </ResponsiveContainer>
+      <HighchartsReact highcharts={Highcharts} options={options} />
     </div>
   );
 }
 
 function LineChartWidget({ widget }: { widget: LineChartWidgetSpec }) {
+  const options: Highcharts.Options = {
+    chart: { type: "line" },
+    title: { text: undefined },
+    xAxis: { categories: widget.data.map(d => String(d[widget.xKey])) },
+    yAxis: { title: { text: undefined } },
+    series: [{ type: "line", name: widget.yKey, data: widget.data.map(d => Number(d[widget.yKey])) }],
+    credits: { enabled: false },
+  };
   return (
     <div style={{ background: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: 8, padding: 16 }}>
       <h3 style={{ margin: "0 0 12px", fontSize: 14, color: "#374151" }}>{widget.title}</h3>
-      <ResponsiveContainer width="100%" height={200}>
-        <LineChart data={widget.data}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey={widget.xKey} />
-          <YAxis />
-          <Tooltip />
-          <Line type="monotone" dataKey={widget.yKey} stroke="#2563eb" />
-        </LineChart>
-      </ResponsiveContainer>
+      <HighchartsReact highcharts={Highcharts} options={options} />
     </div>
   );
 }
