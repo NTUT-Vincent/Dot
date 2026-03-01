@@ -27,12 +27,47 @@ Dot has peer dependencies on `react` and `react-dom` ≥ 17.
 
 ## Quick Start
 
+### Using the Google Gemini API
+
+Install the Gemini SDK alongside Dot:
+
+```bash
+npm install dot @google/generative-ai
+```
+
+Then wire it up with the built-in `createGeminiClient` helper:
+
 ```tsx
 import React from "react";
-import { Dot, DotProvider } from "dot";
+import { Dot, DotProvider, createGeminiClient } from "dot";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
+// 1. Create the Gemini-backed LLM client
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+const llmClient = createGeminiClient(genAI, { model: "gemini-1.5-flash" });
+
+// 2. Wrap your app with DotProvider
+export function App() {
+  const data = { sales: [...], users: [...] };
+
+  return (
+    <DotProvider appDescription="Sales analytics app" llmClient={llmClient}>
+      <YourApp />
+      {/* 3. Drop <Dot> wherever you want the floating button */}
+      <Dot data={data} />
+    </DotProvider>
+  );
+}
+```
+
+### Using a custom / proxy backend
+
+You can also implement the `DotLLMClient` interface yourself to call any LLM
+(e.g. through your own server-side proxy):
+
+```tsx
 import type { DotLLMClient } from "dot";
 
-// 1. Implement the LLM client interface
 const myLLMClient: DotLLMClient = {
   async generateDashboard({ messages }) {
     const response = await fetch("/api/ai/dashboard", {
@@ -43,19 +78,6 @@ const myLLMClient: DotLLMClient = {
     return { jsonText };
   },
 };
-
-// 2. Wrap your app (or the section that needs Dot) with DotProvider
-export function App() {
-  const data = { sales: [...], users: [...] };
-
-  return (
-    <DotProvider appDescription="Sales analytics app" llmClient={myLLMClient}>
-      <YourApp />
-      {/* 3. Drop <Dot> wherever you want the floating button */}
-      <Dot data={data} />
-    </DotProvider>
-  );
-}
 ```
 
 Clicking the floating button opens a side panel with a chat input and a live dashboard.
@@ -85,6 +107,15 @@ interface DotLLMClient {
   generateDashboard(args: { messages: ChatMessage[] }): Promise<{ jsonText: string }>;
 }
 ```
+
+### `createGeminiClient(genAI, options?)`
+
+Built-in helper that wraps a `GoogleGenerativeAI` instance as a `DotLLMClient`.
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `genAI` | `GoogleGenerativeAI` | — | Gemini client from `@google/generative-ai`. |
+| `options.model` | `string` | `"gemini-1.5-flash"` | Gemini model name to use. |
 
 ### `DotOptions`
 
