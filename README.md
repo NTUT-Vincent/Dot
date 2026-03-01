@@ -62,8 +62,35 @@ export function App() {
 
 ### Using a custom / proxy backend
 
-You can also implement the `DotLLMClient` interface yourself to call any LLM
-(e.g. through your own server-side proxy):
+Use the built-in `createCustomClient` helper to call any LLM — OpenAI,
+Anthropic, Ollama, or your own server-side proxy — by supplying a single
+`generate` callback that returns the raw dashboard-spec JSON text:
+
+```tsx
+import { createCustomClient, DotProvider, Dot } from "dot";
+
+const llmClient = createCustomClient(async (messages) => {
+  const response = await fetch("/api/ai/dashboard", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ messages }),
+  });
+  const { jsonText } = await response.json();
+  return jsonText;
+});
+
+export function App() {
+  return (
+    <DotProvider appDescription="My app" llmClient={llmClient}>
+      <YourApp />
+      <Dot data={data} />
+    </DotProvider>
+  );
+}
+```
+
+You can also implement the `DotLLMClient` interface directly if you need full
+control:
 
 ```tsx
 import type { DotLLMClient } from "dot";
@@ -116,6 +143,14 @@ Built-in helper that wraps a `GoogleGenerativeAI` instance as a `DotLLMClient`.
 |-----------|------|---------|-------------|
 | `genAI` | `GoogleGenerativeAI` | — | Gemini client from `@google/generative-ai`. |
 | `options.model` | `string` | `"gemini-1.5-flash"` | Gemini model name to use. |
+
+### `createCustomClient(generate)`
+
+Built-in helper that wraps any `generate` callback as a `DotLLMClient`.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `generate` | `(messages: ChatMessage[]) => Promise<string>` | A function that calls your LLM and returns the raw dashboard-spec JSON string. |
 
 ### `DotOptions`
 

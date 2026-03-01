@@ -5,6 +5,7 @@ export { useDataDescription } from "./react/hooks/useDataDescription";
 export type { DotLLMClient } from "./llm/types";
 export { createGeminiClient } from "./llm/gemini";
 export type { GoogleGenerativeAILike } from "./llm/gemini";
+export { createCustomClient } from "./llm/custom";
 export type {
   DashboardSpec,
   WidgetSpec,
